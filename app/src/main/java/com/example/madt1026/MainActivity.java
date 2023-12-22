@@ -10,11 +10,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
-import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,13 +23,43 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("MainActivity", "onCreate invoked");
         setContentView(R.layout.activity_main);
 
-        this.lvNotes = findViewById(R.id.lvNotes);
-        this.adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, this.listNoteItems);
-        this.lvNotes.setAdapter(adapter);
+        lvNotes = findViewById(R.id.lvNotes);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listNoteItems);
+        lvNotes.setAdapter(adapter);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadNotes();
+    }
+
+    private void loadNotes() {
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.NOTES_FILE, MODE_PRIVATE);
+        Map<String, ?> notesMap = sharedPreferences.getAll();
+        listNoteItems.clear();
+        for (Map.Entry<String, ?> entry : notesMap.entrySet()) {
+            // Check if the key contains the prefix "LastNote"
+            String key = entry.getKey();
+            if (key.startsWith("LastNote")) {
+                // Remove the prefix "LastNote" from the key
+                key = key.substring("LastNote".length());
+            }
+
+            // If there's a colon or other separator after "LastNote", remove it as well
+            key = key.replaceFirst("^:\\s+", ""); // regex to replace colon and any whitespace following it
+
+            // Concatenate the modified key (title) and the note content
+            String noteTitleAndContent = key + ": " + entry.getValue().toString();
+            listNoteItems.add(noteTitleAndContent);
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -41,32 +69,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d("MainActivity", "onStart invoked");
-        SharedPreferences sharedPref = this.getSharedPreferences(Constants.NOTES_FILE, this.MODE_PRIVATE);
-        String lastSavedNote = sharedPref.getString(Constants.NOTE_KEY, "NA");
-        String lastSavedNoteDate = sharedPref.getString(Constants.NOTE_KEY_DATE, "1900-01-01");
-        Set<String> savedSet = sharedPref.getStringSet(Constants.NOTES_ARRAY_KEY, null);
-
-        if(savedSet != null) {
-            this.listNoteItems.clear();
-            this.listNoteItems.addAll(savedSet);
-            this.adapter.notifyDataSetChanged();
-        }
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.d("MainActivity", "onOptionsItemSelected invoked");
         switch (item.getItemId()) {
             case R.id.add_note:
-                Intent i = new Intent(this, AddNoteActivity.class);
-                startActivity(i);
+                startActivity(new Intent(this, AddNoteActivity.class));
                 return true;
             case R.id.remove_note:
-                Intent deleteIntent = new Intent(this, DeleteNoteActivity.class);
-                startActivity(deleteIntent);
+                startActivity(new Intent(this, DeleteNoteActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -8,16 +8,15 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
-import java.util.ArrayList;
-import java.util.Set;
-import android.util.Log;
-import java.util.HashSet;
 
+import java.util.ArrayList;
+import java.util.Map;
 
 public class DeleteNoteActivity extends AppCompatActivity {
 
     private Spinner spinnerNotes;
     private ArrayAdapter<String> adapter;
+    private ArrayList<String> noteTitles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,42 +25,22 @@ public class DeleteNoteActivity extends AppCompatActivity {
 
         spinnerNotes = findViewById(R.id.spinnerNotes);
         loadNotesIntoSpinner();
-
-        Log.d("DeleteNoteActivity", "onCreate invoked");
     }
 
     private void loadNotesIntoSpinner() {
-        SharedPreferences sharedPref = getSharedPreferences(Constants.NOTES_FILE, MODE_PRIVATE);
-        Set<String> notesSet = sharedPref.getStringSet(Constants.NOTES_ARRAY_KEY, null);
-
-        if (notesSet != null) {
-            ArrayList<String> notesList = new ArrayList<>(notesSet);
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, notesList);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinnerNotes.setAdapter(adapter);
-        }
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.NOTES_FILE, MODE_PRIVATE);
+        Map<String, ?> notesMap = sharedPreferences.getAll();
+        noteTitles = new ArrayList<>(notesMap.keySet());
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, noteTitles);
+        spinnerNotes.setAdapter(adapter);
     }
 
     public void onDeleteNoteClick(View view) {
         String selectedNote = spinnerNotes.getSelectedItem().toString();
-        SharedPreferences sharedPref = getSharedPreferences(Constants.NOTES_FILE, MODE_PRIVATE);
-        Set<String> notesSet = new HashSet<>(sharedPref.getStringSet(Constants.NOTES_ARRAY_KEY, new HashSet<>()));
+        SharedPreferences sharedPreferences = getSharedPreferences(Constants.NOTES_FILE, MODE_PRIVATE);
+        sharedPreferences.edit().remove(selectedNote).apply();
 
-        if (notesSet.remove(selectedNote)) {
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putStringSet(Constants.NOTES_ARRAY_KEY, notesSet); // Re-put the set after editing
-            editor.apply();
-
-            // Update the adapter and spinner
-            ArrayAdapter<String> adapter = (ArrayAdapter<String>) spinnerNotes.getAdapter();
-            adapter.remove(selectedNote);
-            adapter.notifyDataSetChanged();
-
-            Toast.makeText(this, "Note deleted", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Error: Note not found", Toast.LENGTH_SHORT).show();
-        }
-
-        Log.d("DeleteNoteActivity", "Note Deleted: " + selectedNote);
+        Toast.makeText(this, "Note deleted", Toast.LENGTH_SHORT).show();
+        loadNotesIntoSpinner(); // Refresh the spinner
     }
 }

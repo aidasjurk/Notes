@@ -1,8 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MADT1026</string>
-    <string name="add_note">Add note in Polish</string>
+    <string name="notes_text">Notes</string> <!-- This is what will be displayed in lblNotes -->
+    <string name="add_note">Add Note</string>
+    <string name="save_and_close">Save and close</string>
+    <string name="note_text">Note text</string>
+    <string name="msg_last_saved_note">Last saved note</string>
+    <string name="remove_note">Remove note</string>
+    <string name="update_note">Update</string>
+    <string name="sec_add_note">Secondary menu item</string>
+    <string name="dunno">Dunno</string>
+    <string name="landscape_update">Landscape update</string>
+    <string name="msg_updated_clicked">Update Clicked</string>
+    <string name="msg_dunno_clicked">Dunno Clicked</string>
     <string name="delete_note">Delete Note</string>
-    <string name="note_title_hint">Pavadinimas</string>
-    <string name="note_content_hint">Turinys</string>
+    <string name="note_title_hint">Title</string>
+    <string name="note_content_hint">Content</string>
 </resources>
